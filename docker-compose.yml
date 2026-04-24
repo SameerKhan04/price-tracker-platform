@@ -5,8 +5,6 @@
 # Stop with: docker compose down
 # Stop and wipe the database: docker compose down -v
 
-version: "3.9"
-
 services:
 
   # ── PostgreSQL database ─────────────────────────────────────────────────────
@@ -18,11 +16,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: pricetracker
     volumes:
-      # Named volume: data persists between docker compose down/up
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      # Expose to host so you can connect with a GUI like TablePlus or DBeaver
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pricetracker"]
       interval: 5s
@@ -55,7 +49,6 @@ services:
       DATABASE_URL: postgresql://pricetracker:password@db:5432/pricetracker
       REDIS_URL: redis://redis:6379/0
     volumes:
-      # Mount local code into container so changes reflect without rebuild
       - .:/app
     depends_on:
       db:
@@ -101,6 +94,5 @@ services:
       redis:
         condition: service_healthy
 
-# ── Named volumes ───────────────────────────────────────────────────────────
 volumes:
   postgres_data:
