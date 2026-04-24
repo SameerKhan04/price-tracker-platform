@@ -15,11 +15,11 @@ Flask-Login integration:
   don't have to write them ourselves.
 """
 
-import bcrypt
-from flask_login import UserMixin
 from datetime import datetime, timezone
 
+import bcrypt
 from app.extensions import db, login_manager
+from flask_login import UserMixin
 
 
 class User(UserMixin, db.Model):
@@ -57,12 +57,11 @@ class User(UserMixin, db.Model):
     @property
     def unread_notification_count(self) -> int:
         """Convenience property used in the nav badge."""
+        from app.models.notification import \
+            Notification  # local import avoids circular dependency
         return Notification.query.filter_by(
             user_id=self.id, is_read=False
         ).count()
-
-    def __repr__(self) -> str:
-        return f"<User {self.username}>"
 
 
 @login_manager.user_loader
