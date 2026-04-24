@@ -1,0 +1,106 @@
+# docker-compose.yml
+# ------------------
+# Defines all five services that make up the Price Tracker stack.
+# Run everything with: docker compose up --build
+# Stop with: docker compose down
+# Stop and wipe the database: docker compose down -v
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL database ─────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pricetracker
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pricetracker
+    volumes:
+      # Named volume: data persists between docker compose down/up
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Expose to host so you can connect with a GUI like TablePlus or DBeaver
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pricetracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Celery message broker) ───────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Flask web application ───────────────────────────────────────────────────
+  web:
+    build: .
+    restart: unless-stopped
+    command: gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 --reload wsgi:app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://pricetracker:password@db:5432/pricetracker
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      # Mount local code into container so changes reflect without rebuild
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery worker (processes queued tasks) ──────────────────────────────────
+  worker:
+    build: .
+    restart: unless-stopped
+    command: celery -A celery_worker.celery worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://pricetracker:password@db:5432/pricetracker
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery beat (triggers scheduled tasks) ──────────────────────────────────
+  beat:
+    build: .
+    restart: unless-stopped
+    command: celery -A celery_worker.celery beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://pricetracker:password@db:5432/pricetracker
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+# ── Named volumes ───────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
