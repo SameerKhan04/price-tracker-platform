@@ -9,8 +9,8 @@ class BaseConfig:
     ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
 
     # Celery 5 uses lowercase keys — the old CELERY_ prefix is no longer supported
-    broker_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-    result_backend = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+    broker_url = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+    result_backend = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 
 
 class DevelopmentConfig(BaseConfig):

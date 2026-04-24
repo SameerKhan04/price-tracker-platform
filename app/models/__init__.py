@@ -6,12 +6,12 @@ when it scans the app. If a model isn't imported here, it won't appear in
 generated migrations.
 """
 
-from app.models.user import User
-from app.models.product import Product
-from app.models.price_history import PriceHistory
-from app.models.watchlist import UserProduct
 from app.models.notification import Notification
+from app.models.price_history import PriceHistory
+from app.models.product import Product
 from app.models.scrape_job import ScrapeJob
+from app.models.user import User
+from app.models.user_product import UserProduct
 
 __all__ = [
     "User",

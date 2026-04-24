@@ -14,9 +14,8 @@ Why use a factory function instead of a global `app = Flask(__name__)`?
 import logging
 import os
 
-from flask import Flask
-
 from app.config import config_map
+from flask import Flask
 
 
 def create_app(config_name: str = None) -> Flask:
@@ -60,10 +59,10 @@ def create_app(config_name: str = None) -> Flask:
     # ── 4. Register blueprints ────────────────────────────────────────────────
     # Each blueprint is a self-contained feature module.
     # url_prefix means all routes inside auth/ start with /auth, etc.
-    from app.auth import auth_bp
-    from app.products import products_bp
-    from app.dashboard import dashboard_bp
     from app.admin import admin_bp
+    from app.auth import auth_bp
+    from app.dashboard import dashboard_bp
+    from app.products import products_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(products_bp, url_prefix="/products")
@@ -79,6 +78,7 @@ def create_app(config_name: str = None) -> Flask:
 
     # ── 6. Import models so Flask-Migrate can detect them ─────────────────────
     # Alembic needs to see the models at app creation time to generate migrations.
-    from app.models import user, product, price_history, watchlist, notification, scrape_job  # noqa: F401
+    from app.models import (notification, price_history, product,  # noqa: F401
+                            scrape_job, user, user_product)
 
     return app

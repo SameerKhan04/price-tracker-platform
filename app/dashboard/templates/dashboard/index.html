@@ -2,11 +2,59 @@
 {% block title %}Dashboard — Price Tracker{% endblock %}
 
 {% block content %}
-<div class="empty-state">
-  <h2>👋 Welcome, {{ current_user.username }}!</h2>
-  <p>You're logged in. Dashboard coming in Phase 4.</p>
-  <a href="{{ url_for('products.add') }}" class="btn btn-primary">
-    + Track your first product
-  </a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <h1>My Watchlist</h1>
+  <a href="{{ url_for('products.add') }}" class="btn btn-primary">+ Track Product</a>
 </div>
+
+{% if user_products %}
+<div class="card-grid">
+  {% for up in user_products %}
+  {% set p = up.product %}
+  <a href="{{ url_for('products.detail', product_id=p.id) }}"
+     style="text-decoration: none; color: inherit;">
+    <div class="card" style="height: 100%; transition: box-shadow 0.15s;">
+
+      {% if p.image_url %}
+      <img src="{{ p.image_url }}" alt="{{ p.title }}"
+           style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 0.75rem;" />
+      {% endif %}
+
+      <p class="text-muted text-small" style="margin-bottom: 0.25rem;">{{ p.source_site }}</p>
+
+      <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem; line-height: 1.4;">
+        {{ p.title or p.url | truncate(60) }}
+      </h3>
+
+      {% if p.current_price %}
+        <p style="font-size: 1.4rem; font-weight: 700; color: var(--primary);">
+          ${{ "%.2f"|format(p.current_price) }}
+        </p>
+        <p class="text-muted text-small">
+          Updated {{ p.last_scraped.strftime('%d %b %H:%M') if p.last_scraped else '—' }}
+        </p>
+      {% elif p.scrape_status == 'error' %}
+        <p style="color: var(--error); font-size: 0.85rem;">⚠ Could not fetch price</p>
+      {% else %}
+        <p class="text-muted text-small">⏳ Fetching price...</p>
+      {% endif %}
+
+      {% if up.alert_price %}
+        <p class="text-small" style="color: var(--warning); margin-top: 0.5rem;">
+          🔔 Alert: below ${{ "%.2f"|format(up.alert_price) }}
+        </p>
+      {% endif %}
+
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <h3>No products tracked yet</h3>
+  <p>Add a product URL to start tracking its price over time.</p>
+  <a href="{{ url_for('products.add') }}" class="btn btn-primary">Track your first product</a>
+</div>
+{% endif %}
 {% endblock %}

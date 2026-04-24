@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ product.title or 'Product' }} — Price Tracker{% endblock %}
+
+{% block content %}
+<div style="max-width: 860px; margin: 0 auto;">
+
+  <!-- ── Breadcrumb ─────────────────────────────────────── -->
+  <p class="text-small text-muted" style="margin-bottom: 1rem;">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a> / {{ product.title or product.source_site }}
+  </p>
+
+  <!-- ── Product header ────────────────────────────────── -->
+  <div class="card" style="display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1rem;">
+    {% if product.image_url %}
+    <img
+      src="{{ product.image_url }}"
+      alt="{{ product.title }}"
+      style="width: 120px; height: 120px; object-fit: contain; border-radius: 0.375rem; flex-shrink: 0;"
+    />
+    {% endif %}
+
+    <div style="flex: 1; min-width: 0;">
+      <h1 style="font-size: 1.25rem; margin-bottom: 0.5rem;">
+        {{ product.title or 'Untitled Product' }}
+      </h1>
+
+      <p class="text-muted text-small" style="margin-bottom: 0.75rem;">
+        Source: {{ product.source_site }}
+        &nbsp;·&nbsp;
+        <a href="{{ product.url }}" target="_blank" rel="noopener">View original ↗</a>
+      </p>
+
+      <div style="display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;">
+        {% if product.current_price %}
+          <span style="font-size: 1.75rem; font-weight: 700; color: var(--primary);">
+            ${{ "%.2f"|format(product.current_price) }}
+          </span>
+          <span class="text-muted text-small">
+            Last checked: {{ product.last_scraped.strftime('%d %b %Y %H:%M') if product.last_scraped else 'Never' }}
+          </span>
+        {% else %}
+          <span class="text-muted">Price pending — scrape in progress...</span>
+        {% endif %}
+      </div>
+
+      {% if user_product.alert_price %}
+        <p class="text-small mt-1" style="color: var(--warning);">
+          🔔 You'll be alerted when price drops below ${{ "%.2f"|format(user_product.alert_price) }}
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Remove form -->
+    <form method="POST" action="{{ url_for('products.remove', product_id=product.id) }}"
+          onsubmit="return confirm('Stop tracking this product?')">
+      <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+    </form>
+  </div>
+
+  <!-- ── Price history chart ────────────────────────────── -->
+  {% if chart_prices %}
+  <div class="card" style="margin-bottom: 1rem;">
+    <h2 style="font-size: 1rem; margin-bottom: 1rem;">Price History</h2>
+    anvas id="priceChart" height="80"></canvas>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chart_labels | tojson }},
+        datasets: [{
+          label: 'Price (AUD)',
+          data: {{ chart_prices | tojson }},
+          borderColor: '#01696f',
+          backgroundColor: 'rgba(1, 105, 111, 0.08)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#01696f',
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => '$' + ctx.parsed.y.toFixed(2)
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: val => '$' + val.toFixed(2)
+            }
+          }
+        }
+      }
+    });
+  </script>
+  {% else %}
+  <div class="card empty-state" style="margin-bottom: 1rem;">
+    <p>No price history yet. Check back soon — a scrape is in progress.</p>
+  </div>
+  {% endif %}
+
+  <!-- ── Price history table ────────────────────────────── -->
+  {% if chart_prices %}
+  <div class="card">
+    <h2 style="font-size: 1rem; margin-bottom: 0.75rem;">Raw History</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in history %}
+          <tr>
+            <td>{{ entry.scraped_at.strftime('%d %b %Y %H:%M') }}</td>
+            <td>${{ "%.2f"|format(entry.price) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

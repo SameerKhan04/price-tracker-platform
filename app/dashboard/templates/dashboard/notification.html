@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Price Tracker{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1.5rem;">Notifications</h1>
+
+{% if notifications %}
+<div style="max-width: 640px;">
+  {% for n in notifications %}
+  <div class="card" style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <p style="margin-bottom: 0.25rem;">{{ n.message }}</p>
+      <p class="text-muted text-small">{{ n.created_at.strftime('%d %b %Y %H:%M') }}</p>
+    </div>
+    {% if n.product_id %}
+    <a href="{{ url_for('products.detail', product_id=n.product_id) }}" class="btn btn-secondary btn-sm" style="flex-shrink: 0; margin-left: 1rem;">
+      View
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <h3>No notifications</h3>
+  <p>You'll be notified here when a tracked product price drops.</p>
+</div>
+{% endif %}
+{% endblock %}
