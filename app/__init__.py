@@ -15,7 +15,7 @@ import logging
 import os
 
 from app.config import config_map
-from flask import Flask
+from flask import Flask, render_template
 
 
 def create_app(config_name: str = None) -> Flask:
@@ -80,5 +80,14 @@ def create_app(config_name: str = None) -> Flask:
     # Alembic needs to see the models at app creation time to generate migrations.
     from app.models import (notification, price_history, product,  # noqa: F401
                             scrape_job, user, user_product)
+
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template("errors/500.html"), 500
 
     return app

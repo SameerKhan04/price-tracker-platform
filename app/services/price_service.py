@@ -5,7 +5,7 @@ Handles storing price snapshots and detecting price drops.
 """
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.extensions import db
 from app.models.price_history import PriceHistory
@@ -21,7 +21,7 @@ def record_price(product_id: int, price: float) -> PriceHistory:
     Also updates the product's current_price and last_scraped timestamp.
     Returns the new PriceHistory row.
     """
-    product = Product.query.get(product_id)
+    product = db.session.get(Product, product_id)
     if not product:
         raise ValueError(f"Product {product_id} not found")
 
@@ -33,8 +33,7 @@ def record_price(product_id: int, price: float) -> PriceHistory:
 
     # Update denormalised current_price on the Product for fast dashboard queries
     product.current_price = price
-    product.last_scraped = datetime.utcnow()
-    product.scrape_status = "ok"
+    product.last_scraped = datetime.now(UTC)
 
     db.session.commit()
     logger.info(f"Price recorded for product {product_id}: {old_price} → {price}")
