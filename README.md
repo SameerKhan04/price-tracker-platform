@@ -7,7 +7,13 @@ Built as a portfolio project demonstrating real engineering practices: service l
 ---
 
 ## Screenshots
-
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/6917f792-c40b-44a4-99e2-7f1765e6f7e2" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/c773fc55-fa61-4153-b8a2-1d3ec6359332" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/f2c91980-c522-4ac0-b39c-1b15ae18a740" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/74fcec72-8a77-43be-95b7-c632c2ecd882" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/1bb20331-97f0-49f2-a429-8759461b04d5" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/02e7333a-0ba5-4311-8947-485600fb3730" />
+<img width="2549" height="1035" alt="image" src="https://github.com/user-attachments/assets/27cd4f67-3617-48a5-95a4-e0f8cec3ba23" />
 
 ---
 
