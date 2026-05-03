@@ -15,6 +15,7 @@ accidentally adding the same product twice.
 """
 
 from datetime import datetime, timezone
+
 from app.extensions import db
 
 
@@ -33,6 +34,7 @@ class UserProduct(db.Model):
     product_id = db.Column(
         db.Integer, db.ForeignKey("products.id"), nullable=False, index=True
     )
+    
     added_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Optional: alert when price drops below this value.

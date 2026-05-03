@@ -87,3 +87,40 @@ def remove(product_id):
     else:
         flash("Product removed from your watchlist.", "info")
     return redirect(url_for("dashboard.index"))
+
+@products_bp.route("/<int:product_id>/alert", methods=["POST"])
+@login_required
+def update_alert(product_id):
+    user_product = UserProduct.query.filter_by(
+        user_id=current_user.id, product_id=product_id
+    ).first_or_404()
+
+    alert_price_raw = request.form.get("alert_price", "").strip()
+    if alert_price_raw:
+        try:
+            val = float(alert_price_raw)
+            if val <= 0:
+                raise ValueError
+            user_product.alert_price = val
+            from app.extensions import db
+            db.session.commit()
+            flash("Alert price saved.", "success")
+        except ValueError:
+            flash("Alert price must be a positive number.", "error")
+    else:
+        flash("Please enter a price.", "error")
+
+    return redirect(url_for("products.detail", product_id=product_id))
+
+
+@products_bp.route("/<int:product_id>/alert/clear", methods=["GET"])
+@login_required
+def clear_alert(product_id):
+    user_product = UserProduct.query.filter_by(
+        user_id=current_user.id, product_id=product_id
+    ).first_or_404()
+    from app.extensions import db
+    user_product.alert_price = None
+    db.session.commit()
+    flash("Alert cleared.", "info")
+    return redirect(url_for("products.detail", product_id=product_id))
