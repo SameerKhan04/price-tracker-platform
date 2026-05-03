@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Products — Admin{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('admin.index') }}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Admin
+    </a>
+    <h1 class="mt-1">Products</h1>
+    <p class="text-muted">{{ products|length }} product{% if products|length != 1 %}s{% endif %} tracked across all users</p>
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Source</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Trackers</th>
+        <th>Last scraped</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+        <tr>
+          <td style="max-width: 280px;">
+            <p class="text-small font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">
+              {{ product.title or product.url | truncate(60) }}
+            </p>
+            <a href="{{ product.url }}" target="_blank" rel="noopener noreferrer" class="text-muted text-small table-link">
+              {{ product.url | truncate(50) }}
+            </a>
+          </td>
+          <td class="text-muted text-small">{{ product.source_site or '—' }}</td>
+          <td>
+            {% if product.current_price %}
+              <span class="font-medium">${{ "%.2f"|format(product.current_price) }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td><span class="product-status product-status--{{ product.scrape_status }}">{{ product.scrape_status }}</span></td>
+          <td class="text-muted text-small">{{ product.tracker_count }}</td>
+          <td class="text-muted text-small">
+            {{ product.last_scraped.strftime('%d %b %H:%M') if product.last_scraped else '—' }}
+          </td>
+          <td>
+            <div class="table-actions">
+              <form method="POST" action="{{ url_for('admin.trigger_scrape', product_id=product.id) }}">
+                <button type="submit" class="btn btn-secondary btn-sm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  Scrape
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                    onsubmit="return confirm('Delete this product for ALL users?')">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Users — Admin{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('admin.index') }}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Admin
+    </a>
+    <h1 class="mt-1">Users</h1>
+    <p class="text-muted">{{ users|length }} registered account{% if users|length != 1 %}s{% endif %}</p>
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Products</th>
+        <th>Joined</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>
+            <span class="font-medium">{{ user.username }}</span>
+            {% if user.id == current_user.id %}
+              <span class="badge-you">you</span>
+            {% endif %}
+          </td>
+          <td class="text-muted text-small">{{ user.email }}</td>
+          <td>
+            {% if user.is_admin %}
+              <span class="product-status product-status--ok">admin</span>
+            {% else %}
+              <span class="product-status product-status--pending">user</span>
+            {% endif %}
+          </td>
+          <td class="text-muted text-small">{{ user.tracked_products|length }}</td>
+          <td class="text-muted text-small">{{ user.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <div class="table-actions">
+              {% if user.id != current_user.id %}
+                <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=user.id) }}">
+                  <button type="submit" class="btn btn-secondary btn-sm">
+                    {{ 'Revoke admin' if user.is_admin else 'Make admin' }}
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                      onsubmit="return confirm('Delete {{ user.username }}? This cannot be undone.')">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              {% else %}
+                <span class="text-muted text-small">—</span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

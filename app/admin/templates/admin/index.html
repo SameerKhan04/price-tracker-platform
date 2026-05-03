@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Admin — Price Tracker{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Admin panel</h1>
+    <p class="text-muted">Platform overview and controls</p>
+  </div>
+</div>
+
+<div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+  <div class="stat-card">
+    <p class="stat-label">Users</p>
+    <p class="stat-value">{{ total_users }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Products</p>
+    <p class="stat-value">{{ total_products }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Scraping OK</p>
+    <p class="stat-value text-success">{{ ok_products }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Errors</p>
+    <p class="stat-value {% if error_products > 0 %}text-error{% endif %}">{{ error_products }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Pending</p>
+    <p class="stat-value text-warning">{{ pending_products }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Failed jobs</p>
+    <p class="stat-value {% if failed_jobs > 0 %}text-error{% endif %}">{{ failed_jobs }}</p>
+  </div>
+</div>
+
+<div class="admin-nav-row mt-2">
+  <a href="{{ url_for('admin.users') }}" class="admin-nav-card">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Manage users</span>
+    <span class="admin-nav-count">{{ total_users }}</span>
+  </a>
+  <a href="{{ url_for('admin.products') }}" class="admin-nav-card">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    <span>Manage products</span>
+    <span class="admin-nav-count">{{ total_products }}</span>
+  </a>
+  <a href="{{ url_for('admin.jobs') }}" class="admin-nav-card">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Scrape job log</span>
+    <span class="admin-nav-count">{{ total_jobs }}</span>
+  </a>
+</div>
+
+<div class="card mt-2">
+  <div class="chart-header">
+    <p class="section-label">Recent scrape jobs</p>
+    <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm">View all</a>
+  </div>
+  {% if recent_jobs %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Error</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in recent_jobs %}
+            <tr>
+              <td>
+                {% if job.product %}
+                  <span class="text-small">{{ job.product.source_site or 'Unknown' }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td><span class="product-status product-status--{{ job.status }}">{{ job.status }}</span></td>
+              <td class="text-muted text-small">{{ job.duration_ms }}ms</td>
+              <td class="text-small text-error">{{ job.error_message or '' }}</td>
+              <td class="text-muted text-small">{{ job.attempted_at.strftime('%d %b %H:%M') }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted text-small" style="padding: 1rem 0;">No scrape jobs yet.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

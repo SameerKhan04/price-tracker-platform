@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Scrape Jobs — Admin{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('admin.index') }}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Admin
+    </a>
+    <h1 class="mt-1">Scrape job log</h1>
+  </div>
+  <div class="filter-row">
+    <a href="{{ url_for('admin.jobs') }}"
+       class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    <a href="{{ url_for('admin.jobs', status='success') }}"
+       class="btn btn-sm {% if status_filter == 'success' %}btn-primary{% else %}btn-secondary{% endif %}">Success</a>
+    <a href="{{ url_for('admin.jobs', status='failed') }}"
+       class="btn btn-sm {% if status_filter == 'failed' %}btn-primary{% else %}btn-secondary{% endif %}">Failed</a>
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Status</th>
+        <th>Duration</th>
+        <th>Error</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+        <tr>
+          <td>
+            {% if job.product %}
+              <p class="text-small font-medium">{{ job.product.title | truncate(50) if job.product.title else job.product.source_site or '—' }}</p>
+              <a href="{{ job.product.url }}" target="_blank" rel="noopener noreferrer" class="text-muted text-small table-link">
+                {{ job.product.source_site or job.product.url | truncate(40) }}
+              </a>
+            {% else %}
+              <span class="text-muted">Product deleted</span>
+            {% endif %}
+          </td>
+          <td><span class="product-status product-status--{{ job.status }}">{{ job.status }}</span></td>
+          <td class="text-muted text-small">{{ job.duration_ms }}ms</td>
+          <td class="text-small {% if job.error_message %}text-error{% endif %}">{{ job.error_message or '—' }}</td>
+          <td class="text-muted text-small">{{ job.attempted_at.strftime('%d %b %Y, %H:%M') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pagination.pages > 1 %}
+  <div class="pagination mt-2">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for('admin.jobs', page=pagination.prev_num, status=status_filter) }}" class="btn btn-secondary btn-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Previous
+      </a>
+    {% endif %}
+    <span class="pagination-info text-muted text-small">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    {% if pagination.has_next %}
+      <a href="{{ url_for('admin.jobs', page=pagination.next_num, status=status_filter) }}" class="btn btn-secondary btn-sm">
+        Next
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}
