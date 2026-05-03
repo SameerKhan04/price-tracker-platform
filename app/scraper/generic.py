@@ -49,21 +49,18 @@ PRICE_SELECTORS = [
 
 
 def _extract_price(text: str) -> Optional[float]:
-    """
-    Parse a price string like '$1,299.99' or 'AUD 45.00' into a float.
-    Returns None if no valid price found.
-    """
     if not text:
         return None
-    # Remove currency symbols and whitespace, keep digits and decimal point
-    cleaned = re.sub(r"[^\d.,]", "", text.strip())
-    # Handle European format (1.299,99) vs standard (1,299.99)
-    if cleaned.count(",") == 1 and cleaned.count(".") == 0:
-        cleaned = cleaned.replace(",", ".")
-    elif cleaned.count(",") >= 1:
-        cleaned = cleaned.replace(",", "")
+    cleaned = text.strip()
+    # European format: 1.299,99 (dot=thousands, comma=decimal)
+    if re.search(r'\d{1,3}(\.\d{3})+,\d{2}', cleaned):
+        cleaned = cleaned.replace('.', '').replace(',', '.')
+    else:
+        cleaned = cleaned.replace(',', '')
+    cleaned = re.sub(r'[^\d.]', '', cleaned)
     try:
-        return float(cleaned)
+        val = float(cleaned)
+        return val if val > 0 else None
     except (ValueError, TypeError):
         return None
 
